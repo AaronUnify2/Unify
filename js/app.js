@@ -3,7 +3,8 @@
 
    Routes (the part after #):
      /problems   /problem/<id>     /goals   /goal/<id>     /tasks   /task/<id>
-     /journal    /entry/<id>       /probe   /insights      /settings   /help
+     /session    /journal    /entry/<id>       /probe   /insights
+     /settings   /help
 
    On a phone there is a tab bar at the bottom and one thing on screen at a
    time. On a wide screen there is a rail on the left, and a section's list
@@ -19,8 +20,9 @@
     { id: 'problems', label: 'Problems', item: 'problem', tab: true },
     { id: 'goals', label: 'Goals', item: 'goal', tab: true },
     { id: 'tasks', label: 'Tasks', item: 'task', tab: true },
+    { id: 'session', label: 'Session', tab: true },
     { id: 'journal', label: 'Journal', item: 'entry', tab: true },
-    { id: 'probe', label: 'Probe', tab: true },
+    { id: 'probe', label: 'Probe' },
     { id: 'insights', label: 'Insights' },
     { id: 'settings', label: 'Settings' },
     { id: 'help', label: 'Help' }
@@ -161,7 +163,7 @@
   }
 
   function requestRender() {
-    if (typing() || UI.sheetIsOpen()) {
+    if (typing() || UI.sheetIsOpen() || Views.session.isDragging()) {
       pendingRender = true;
       return;
     }
@@ -380,11 +382,17 @@
 
   // ---- starting --------------------------------------------------------------------
 
+  var liveStarted = false;
+
   /** Show the app (once there's a token, or this device only was chosen). */
   function enter() {
     document.getElementById('gate').hidden = true;
     document.getElementById('app').hidden = false;
     entered = true;
+    if (!liveStarted) {
+      liveStarted = true;
+      Live.start();
+    }
     lastKey = '';
     render();
     drawSync();

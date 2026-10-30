@@ -62,6 +62,7 @@
       goals: d.goals,
       tasks: d.tasks,
       journal: d.journal,
+      sessions: d.sessions,
       deleted: d.deleted
     };
     return JSON.stringify(out, null, 2) + '\n';

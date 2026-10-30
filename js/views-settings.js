@@ -84,6 +84,12 @@
       '<label class="check-row"><input type="checkbox" data-change="pref" data-pref="askReflection"' + (Prefs.get('askReflection') ? ' checked' : '') + '> Ask for a reflection when I tick off a task</label>' +
       '</section>';
 
+    html += '<section class="settings-section"><h2>Sharing sessions</h2>' +
+      (Share.configured()
+        ? '<p>Set up. A session’s <em>Get link</em> shares it with anyone you send the link to, until you stop sharing or finish it.</p>'
+        : '<p>Not set up yet. Sharing needs a small free database (Firebase), set up once; the README has the steps (<em>Sharing sessions</em>).</p>') +
+      '</section>';
+
     html += '<section class="settings-section"><h2>Your data</h2>' +
       '<p>' + U.plural(d.problems.length, 'problem') + ', ' + U.plural(d.goals.length, 'goal') + ', ' +
       U.plural(d.tasks.length, 'task') + ', ' + U.plural(d.journal.length, 'journal entry', 'journal entries') + '.</p>' +
@@ -108,6 +114,7 @@
       '<li><strong>Tasks.</strong> Tick steps off as you go. Each one asks what went well and what you’d do differently, and keeps your answers in the journal.</li>' +
       '<li><strong>Finish.</strong> Finishing a goal marks its problems resolved.</li>' +
       '</ol>' +
+      '<h2>Session</h2><p>Got a morning or a day to get things done? In Tasks, press <em>Plan a session</em> and tap the tasks, then put them in order in Session by dragging the handle or with the arrows. <em>Get link</em> shares it: anyone you send the link to can tick things off and add to the list, and everyone sees it as it happens. What they add waits in Session for you to keep or discard. Finishing the session stops the link.</p>' +
       '<h2>Journal</h2><p>Write whenever you like, with a mood and feelings if they help. Link an entry to a goal or problem, or select a few words and press <em>Turn into a problem</em>.</p>' +
       '<h2>Probe</h2><p>Describe a situation in your own words, and Probe finds anything like it you’ve written before — and what came of it. It also lists the gaps (problems with no goal, goals with no next step, goals gone quiet) and what keeps coming back.</p>' +
       '<h2>Your data</h2><p>Everything is saved on this device as you go, and synced to your private GitHub repository. Phone and computer are merged record by record, so neither overwrites the other. It works offline and catches up when you’re back.</p>' +

@@ -8,16 +8,17 @@
    kept by the app itself, in this browser's storage.
    =========================================================================== */
 
-var CACHE = 'unify-shell-v1';
+var CACHE = 'unify-shell-v2';
 var VENDOR = 'unify-vendor-v1';
 var TIMEOUT = 4000;
 
 var SHELL = [
-  './', 'index.html', 'css/app.css', 'manifest.webmanifest', 'icons/icon.svg',
+  './', 'index.html', 'session.html', 'css/app.css', 'manifest.webmanifest', 'icons/icon.svg',
   'js/util.js', 'js/model.js', 'js/merge.js', 'js/github.js', 'js/store.js', 'js/sync.js',
+  'js/share.js', 'js/live.js',
   'js/semantic.js', 'js/semantic-worker.js', 'js/probe.js', 'js/handlers.js', 'js/ui.js',
-  'js/views-problems.js', 'js/views-goals.js', 'js/views-tasks.js', 'js/views-journal.js',
-  'js/views-probe.js', 'js/views-insights.js', 'js/views-settings.js', 'js/app.js'
+  'js/views-problems.js', 'js/views-goals.js', 'js/views-tasks.js', 'js/views-session.js', 'js/views-journal.js',
+  'js/views-probe.js', 'js/views-insights.js', 'js/views-settings.js', 'js/app.js', 'js/session-page.js'
 ];
 
 self.addEventListener('install', function (ev) {

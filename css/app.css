@@ -423,6 +423,97 @@ fieldset.checks legend { font-size: 13px; font-weight: 600; color: var(--text-2)
 .reflection { display: block; padding: 10px 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; color: var(--text); }
 .reflection-text { display: block; white-space: pre-wrap; }
 
+/* ---- choosing tasks for a session, and the session ------------------------------------- */
+
+.pick-row { cursor: pointer; align-items: center; }
+.pick-row .task-text { padding-top: 0; }
+.pick-box {
+  width: 26px; height: 26px; flex: none; display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--border-strong); border-radius: 6px; color: transparent;
+}
+.pick-box .icon { width: 16px; height: 16px; stroke-width: 3; }
+.pick-row.picked .pick-box { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.section-tasks .select-help { margin-bottom: 8px; }
+.select-spacer { height: 80px; }
+
+.session-fields .field { flex: 2 1 180px; }
+.session-fields .session-date { flex: 1 1 140px; }
+
+.share-box {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin: 0 0 16px;
+}
+.share-box .record-actions { margin: 4px 0 0; flex-basis: 100%; }
+.share-box > .muted { flex: 1 1 200px; margin: 0; }
+.share-status { display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 600; font-size: 14px; flex-basis: 100%; }
+.share-status .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-3); flex: none; }
+.share-status.live { color: var(--good); }
+.share-status.live .sync-dot { background: var(--good); }
+.share-status.connecting .sync-dot, .share-status.off .sync-dot { background: var(--warn); animation: pulse 1s infinite alternate; }
+.share-status.refused, .share-status.missing { color: var(--danger); }
+.share-status.refused .sync-dot, .share-status.missing .sync-dot { background: var(--danger); }
+
+.pending-box { border: 1px dashed var(--accent); border-radius: var(--radius); padding: 12px 14px; margin: 0 0 16px; background: var(--accent-soft); }
+.pending-box h2 { display: flex; gap: 8px; align-items: baseline; margin-bottom: 4px; }
+.pending-box h2 .count { font-size: 13px; color: var(--text-3); font-weight: 500; }
+.pending-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.pending-item { padding: 10px 0; border-top: 1px solid var(--border); overflow-wrap: anywhere; }
+.pending-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center; }
+.pending-actions select { flex: 1 1 180px; width: auto; min-height: 36px; padding-top: 4px; padding-bottom: 4px; }
+
+.session-list { list-style: none; margin: 0 0 12px; padding: 0; }
+.session-row {
+  display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px solid var(--border);
+  background: var(--bg); position: relative;
+}
+.session-row:last-child { border-bottom: 0; }
+.session-row.done .task-text { color: var(--text-3); text-decoration: line-through; }
+.session-text { flex: 1; min-width: 0; padding: 4px 0; }
+.session-text .task-text { display: block; padding-top: 0; }
+.session-meta { display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 12px; color: var(--text-3); }
+.session-meta .task-goal { max-width: 100%; }
+.drag-handle {
+  width: 30px; height: 40px; flex: none; display: flex; align-items: center; justify-content: center;
+  background: none; border: 0; color: var(--text-3); cursor: grab; touch-action: none; padding: 0;
+}
+.drag-handle .icon { width: 18px; height: 18px; }
+.move-btns { display: flex; flex-direction: column; flex: none; }
+.move-btns .icon-btn { width: 32px; height: 22px; min-height: 0; padding: 0; }
+.move-btns .icon-btn .icon { width: 16px; height: 16px; }
+.move-btns .icon-btn:disabled { opacity: 0.25; cursor: default; }
+.session-row > .icon-btn { width: 32px; height: 32px; flex: none; color: var(--text-3); }
+.session-row > .icon-btn .icon { width: 16px; height: 16px; }
+.session-row.dragging { z-index: 5; background: var(--bg-raised); box-shadow: var(--shadow); border-radius: var(--radius-sm); }
+.session-row.drop-before { box-shadow: inset 0 3px 0 var(--accent); }
+.session-row.drop-after { box-shadow: inset 0 -3px 0 var(--accent); }
+body.dragging { user-select: none; -webkit-user-select: none; cursor: grabbing; }
+.session-add input { flex: 1; min-width: 0; }
+
+.past-session { margin-bottom: 8px; }
+.past-session summary { cursor: pointer; overflow-wrap: anywhere; }
+.past-session .task-list { margin-top: 8px; }
+.past-session .task-text { padding-top: 0; }
+.past-session .record-actions { margin: 8px 0 0; }
+
+/* ---- the shared page (session.html) ------------------------------------------------------ */
+
+.shared-page { max-width: 640px; margin: 0 auto; padding: 16px 16px 48px; }
+.shared-top { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.shared-top .brand { font-size: 18px; }
+.shared-top .share-status { flex-basis: auto; margin-left: auto; font-size: 13px; }
+.shared-page h1 { overflow-wrap: anywhere; }
+.shared-sub { color: var(--text-2); margin: 4px 0 14px; }
+.shared-list { list-style: none; margin: 0 0 16px; padding: 0; }
+.shared-item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.shared-item:last-child { border-bottom: 0; }
+.shared-item .tick { margin-top: 2px; }
+.shared-body { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.shared-item.done .shared-text { color: var(--text-3); text-decoration: line-through; }
+.shared-notes { font-size: 14px; color: var(--text-2); white-space: pre-wrap; margin-top: 2px; }
+.shared-who { display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.shared-goal { color: var(--accent); }
+.shared-name { font-size: 13px; color: var(--text-3); margin-top: 22px; }
+
 /* ---- journal ------------------------------------------------------------------------ */
 
 .day-head { font-size: 14px; color: var(--text-2); margin: 20px 0 8px; }
@@ -563,7 +654,7 @@ fieldset.checks legend { font-size: 13px; font-weight: 600; color: var(--text-2)
   }
   .rail .nav-item:hover { background: var(--bg-input); color: var(--text); }
   .rail .nav-item.on { background: var(--accent-soft); color: var(--accent); }
-  .rail .nav-item:nth-child(7) { margin-top: 14px; padding-top: 9px; }
+  .rail .nav-item:nth-child(8) { margin-top: 14px; padding-top: 9px; }
   .main { margin-left: var(--rail); padding: 24px 32px 48px; max-width: calc(820px + var(--rail)); }
   .main { margin-right: auto; }
   .select-bar { left: calc(var(--rail) + 24px); right: auto; width: min(560px, calc(100% - var(--rail) - 48px)); bottom: 20px; }

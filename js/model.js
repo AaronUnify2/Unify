@@ -8,6 +8,8 @@
      tasks      the steps toward a goal (task.goalId), or standalone
      journal    free writing, and the reflections written on finishing a task
                 or a goal (kind: "reflection")
+     sessions   a set of tasks in the order you'll do them, for a stretch of
+                time (session.taskIds), which can be shared by link (live.js)
      deleted    id -> when it was deleted, so a deletion on one device isn't
                 undone by the other device's older copy (see merge.js)
 
@@ -16,7 +18,8 @@
    same record both keep their edit.
 
    Links are kept on one side only: a goal lists its problems, a task names
-   its goal, an entry lists what it is about. Everything else is worked out.
+   its goal, an entry lists what it is about, a session lists its tasks in
+   order. Everything else is worked out.
    SPEC.md describes every field.
    =========================================================================== */
 
@@ -25,9 +28,9 @@
 
   var SCHEMA = 1;
 
-  var KINDS = ['problems', 'goals', 'tasks', 'journal'];
+  var KINDS = ['problems', 'goals', 'tasks', 'journal', 'sessions'];
 
-  var PREFIX = { problems: 'p', goals: 'g', tasks: 't', journal: 'j' };
+  var PREFIX = { problems: 'p', goals: 'g', tasks: 't', journal: 'j', sessions: 's' };
 
   var AREAS = ['Diet', 'Family', 'Fitness', 'Health', 'Home', 'Parenting', 'Personal',
     'Relationship', 'Sleep', 'Social Life', 'Study', 'Work'];
@@ -80,11 +83,12 @@
     problems: { text: '', area: '', emotion: '', difficulty: 0, status: 'open', resolvedAt: null },
     goals: { title: '', why: '', area: '', difficulty: 0, problemIds: [], status: 'active', doneAt: null },
     tasks: { text: '', goalId: null, area: '', notes: '', done: false, doneAt: null, calendar: null },
-    journal: { text: '', mood: 0, emotions: [], problemIds: [], goalIds: [], taskId: null, kind: 'entry' }
+    journal: { text: '', mood: 0, emotions: [], problemIds: [], goalIds: [], taskId: null, kind: 'entry' },
+    sessions: { title: '', date: '', taskIds: [], status: 'open', finishedAt: null, shareId: null, sharedAt: null, shareGoals: false }
   };
 
   function empty() {
-    return { app: 'Unify', schema: SCHEMA, updatedAt: null, problems: [], goals: [], tasks: [], journal: [], deleted: {} };
+    return { app: 'Unify', schema: SCHEMA, updatedAt: null, problems: [], goals: [], tasks: [], journal: [], sessions: [], deleted: {} };
   }
 
   function copy(value) {
@@ -98,7 +102,7 @@
     if (!rec.createdAt) rec.createdAt = rec.updatedAt || new Date().toISOString();
     if (!rec.updatedAt) rec.updatedAt = rec.createdAt;
     if (!rec.fieldsAt || typeof rec.fieldsAt !== 'object' || Array.isArray(rec.fieldsAt)) rec.fieldsAt = {};
-    ['problemIds', 'goalIds', 'emotions'].forEach(function (k) {
+    ['problemIds', 'goalIds', 'emotions', 'taskIds'].forEach(function (k) {
       if (k in rec && !Array.isArray(rec[k])) rec[k] = [];
     });
     return rec;
@@ -143,6 +147,9 @@
       e.problemIds = e.problemIds.filter(function (id) { return has.problems[id]; });
       e.goalIds = e.goalIds.filter(function (id) { return has.goals[id]; });
       if (e.taskId && !has.tasks[e.taskId]) e.taskId = null;
+    });
+    data.sessions.forEach(function (s) {
+      s.taskIds = s.taskIds.filter(function (id) { return has.tasks[id]; });
     });
     return data;
   }

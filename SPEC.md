@@ -12,6 +12,7 @@ Written by the app as `JSON.stringify(data, null, 2) + '\n'`.
   "goals": [],
   "tasks": [],
   "journal": [],
+  "sessions": [],
   "deleted": {}
 }
 ```
@@ -20,7 +21,7 @@ Written by the app as `JSON.stringify(data, null, 2) + '\n'`.
 
 | Field | |
 |---|---|
-| `id` | `p_…`, `g_…`, `t_…` or `j_…`: a prefix, the time in base 36, a little randomness |
+| `id` | `p_…`, `g_…`, `t_…`, `j_…` or `s_…`: a prefix, the time in base 36, a little randomness |
 | `createdAt` | ISO time it was made |
 | `updatedAt` | ISO time anything in it last changed |
 | `fieldsAt` | `{ field: ISO time }` — when each field last changed. Used to merge two copies field by field |
@@ -70,6 +71,41 @@ Which goals a problem belongs to is worked out from `goals[].problemIds`.
 | `emotions` | feelings, from the same 19 emotions |
 | `problemIds`, `goalIds` | what it is about |
 | `taskId` | the task a reflection is on, or `null` |
+
+## sessions
+
+A few tasks in the order you'll do them, for a morning or a day. Files from
+before sessions existed load as having none.
+
+| Field | |
+|---|---|
+| `title` | its name, e.g. "Saturday jobs" (optional) |
+| `date` | the day it's for, `YYYY-MM-DD` |
+| `taskIds` | its tasks, in order |
+| `status` | `"open"` or `"finished"`. One is worked on at a time: the newest open one |
+| `finishedAt` | ISO time, or `null` |
+| `shareId` | the code of its shared copy while it's shared, or `null` |
+| `sharedAt` | ISO time it was last shared, or `null` |
+| `shareGoals` | whether the shared copy shows each task's goal |
+
+## The shared copy (not in the file)
+
+While a session is shared it is also in the sharing database (Firebase
+Realtime Database), at `/sessions/<shareId>`, and deleted when sharing
+stops. Rules: `firebase-rules.json`.
+
+| Field | |
+|---|---|
+| `title`, `date`, `owner`, `createdAt` | the session's name and day, your name as helpers see it, when it was shared |
+| `items/<key>` | one per task. `key` is the task's id, or `x_…` for something a helper added |
+| `items/…/text`, `notes`, `goal` | the task's text and notes; the goal's title if `shareGoals` |
+| `items/…/order` | its place in the list |
+| `items/…/done`, `doneBy`, `at` | ticked, by whom, and when it was last ticked or unticked |
+| `items/…/addedBy` | who added it, for a helper's addition |
+
+A tick that differs between a task and its item is settled by time: the
+item's `at` against the task's `fieldsAt.done`. A helper's addition becomes
+a task only when you keep it.
 
 ## deleted
 

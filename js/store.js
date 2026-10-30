@@ -86,7 +86,7 @@
   }
 
   /** Change several records, then save and redraw once. */
-  function batch(fn) {
+  function batch(fn, opts) {
     var now = U.nowIso();
     var touch = function (kind, id, patch) {
       var rec = get(kind, id);
@@ -95,7 +95,7 @@
       return rec;
     };
     fn(touch);
-    commit();
+    commit(opts);
   }
 
   /**
@@ -124,6 +124,9 @@
     } else if (kind === 'tasks') {
       data.journal.forEach(function (e) {
         if (e.taskId === id) stamp(e, { taskId: null }, now);
+      });
+      data.sessions.forEach(function (s) {
+        if (s.taskIds.indexOf(id) >= 0) stamp(s, { taskIds: without(s.taskIds) }, now);
       });
     }
     commit();
@@ -191,6 +194,16 @@
     return latest;
   }
 
+  /**
+   * The session being worked on: the open one (the newest, if two devices
+   * each started one), or null.
+   */
+  function openSession() {
+    var open = data.sessions.filter(function (s) { return s.status === 'open'; })
+      .sort(function (a, b) { return a.createdAt < b.createdAt ? 1 : -1; });
+    return open[0] || null;
+  }
+
   /** The area a task belongs to: its goal's, or its own. */
   function taskArea(task) {
     var goal = task.goalId ? get('goals', task.goalId) : null;
@@ -240,6 +253,7 @@
     progress: progress,
     lastActivity: lastActivity,
     taskArea: taskArea,
+    openSession: openSession,
     get data() { return data; },
     get rev() { return rev; }
   };

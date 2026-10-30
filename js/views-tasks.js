@@ -4,6 +4,9 @@
    Every step of every goal, grouped by goal, plus standalone tasks. Ticking
    one off asks two quick questions — what went well, what you'd do
    differently — and saves the answers to the journal as a reflection.
+
+   Plan a session turns the list into one to choose from: tap the tasks for
+   a morning or a day, and they go to the Session section, in that order.
    =========================================================================== */
 
 (function (global) {
@@ -11,11 +14,16 @@
 
   var esc = U.esc;
 
-  var view = { show: 'todo' };   // todo · done
+  var view = {
+    show: 'todo',      // todo · done
+    selecting: false,  // choosing tasks for a session
+    selected: []
+  };
 
   /** One task as a row with a tick box. opts.inGoal leaves out the goal's name. */
   function row(t, opts) {
     opts = opts || {};
+    if (view.selecting && !t.done) return pickRow(t);
     var goal = !opts.inGoal && t.goalId ? Store.get('goals', t.goalId) : null;
     var reflections = Store.entriesFor('tasks', t.id).length;
     var meta = [];
@@ -31,6 +39,15 @@
       '</li>';
   }
 
+  /** A task to tap when choosing tasks for a session. */
+  function pickRow(t) {
+    var picked = view.selected.indexOf(t.id) >= 0;
+    return '<li class="task-row pick-row' + (picked ? ' picked' : '') + '" data-act="tasks-pick" data-id="' + esc(t.id) + '" ' +
+      'role="checkbox" aria-checked="' + picked + '" tabindex="0">' +
+      '<span class="pick-box" aria-hidden="true">' + UI.icon('check') + '</span>' +
+      '<span class="task-text">' + esc(t.text || 'Untitled task') + '</span></li>';
+  }
+
   function goalOptions() {
     return Store.list('goals').filter(function (g) { return g.status === 'active'; })
       .map(function (g) { return [g.id, U.firstLine(g.title, 50)]; });
@@ -39,11 +56,27 @@
   // ---- the list ----------------------------------------------------------------
 
   function list() {
+    // Room at the end, so the bar at the bottom doesn't cover the last task
+    return listHtml() + (view.selecting ? '<div class="select-spacer"></div>' : '');
+  }
+
+  function listHtml() {
     var tasks = Store.list('tasks');
     var todo = tasks.filter(function (t) { return !t.done; });
-    var html = UI.head('Tasks', U.plural(todo.length, 'to do', 'to do'));
+    var html = UI.head('Tasks', U.plural(todo.length, 'to do', 'to do'),
+      view.selecting || !todo.length ? '' : '<button class="btn small" data-act="tasks-select">' + UI.icon('session') + 'Plan a session</button>');
 
-    html += '<form class="card add-card compact" data-form="add-task">' +
+    if (view.selecting) {
+      html += '<div class="select-help">Tap the tasks you’ll do, then <strong>' + (Store.openSession() ? 'Update session' : 'Start session') + '</strong>. You can put them in order next.</div>' +
+        '<div class="select-bar">' +
+        '<span><strong>' + view.selected.length + '</strong> chosen</span>' +
+        '<button class="btn" data-act="tasks-select-cancel">Cancel</button>' +
+        '<button class="btn primary" data-act="tasks-to-session"' + (view.selected.length || Store.openSession() ? '' : ' disabled') + '>' +
+        (Store.openSession() ? 'Update session' : 'Start session') + '</button>' +
+        '</div>';
+    }
+
+    if (!view.selecting) html += '<form class="card add-card compact" data-form="add-task">' +
       '<label class="sr-only" for="nt-text">New task</label>' +
       '<input id="nt-text" type="text" name="text" placeholder="Something to do" autocomplete="off" required>' +
       '<div class="field-row">' +
@@ -51,7 +84,7 @@
       '<button class="btn primary" type="submit">' + UI.icon('plus') + 'Add</button>' +
       '</div></form>';
 
-    html += '<div class="toolbar">' + UI.segmented([['todo', 'To do'], ['done', 'Done']], view.show, 'tasks-show') + '</div>';
+    if (!view.selecting) html += '<div class="toolbar">' + UI.segmented([['todo', 'To do'], ['done', 'Done']], view.show, 'tasks-show') + '</div>';
 
     if (view.show === 'todo') {
       if (!todo.length) {
@@ -221,6 +254,21 @@
 
   Handlers.add('act', {
     'tasks-show': function (el) { view.show = el.dataset.value; App.render(); },
+    'tasks-select': function () { startSelect(); App.render(); },
+    'tasks-select-cancel': function () { view.selecting = false; view.selected = []; App.render(); },
+    'tasks-pick': function (el) {
+      var id = el.dataset.id;
+      var i = view.selected.indexOf(id);
+      if (i >= 0) view.selected.splice(i, 1); else view.selected.push(id);
+      App.render();
+    },
+    'tasks-to-session': function () {
+      var ids = view.selected.slice();
+      view.selecting = false;
+      view.selected = [];
+      Views.session.setTasks(ids);
+      App.go('#/session');
+    },
     'task-toggle': function (el) {
       var t = Store.get('tasks', el.dataset.id);
       if (!t) return;
@@ -245,8 +293,20 @@
     }
   });
 
+  /** Start choosing tasks for the session, with the ones already in it chosen. */
+  function startSelect() {
+    var s = Store.openSession();
+    view.selecting = true;
+    view.show = 'todo';
+    view.selected = s ? s.taskIds.filter(function (id) {
+      var t = Store.get('tasks', id);
+      return t && !t.done;
+    }) : [];
+  }
+
   global.Views = global.Views || {};
   global.Views.tasks = {
+    startSelect: startSelect,
     list: list,
     item: item,
     placeholder: placeholder,
