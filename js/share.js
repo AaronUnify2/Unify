@@ -24,7 +24,7 @@
 
   // The database's address, from the Firebase console (Realtime Database →
   // Data, at the top). Empty means sharing isn't set up yet. Not a secret.
-  var DATABASE = '';
+  var DATABASE = 'https://unify-sessions-default-rtdb.asia-southeast1.firebasedatabase.app';
 
   var ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789';
   var CODE_LENGTH = 24;
