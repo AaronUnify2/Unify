@@ -53,17 +53,19 @@ In the Worker, go to **Settings → Variables and Secrets → Add**:
 | `CONNECTOR_KEY` | Secret | at least 24 random letters and digits (a password generator is fine). It's part of the connector's address and is what keeps everyone else out |
 | `TIMEZONE` | Text | your time zone, e.g. `Europe/London`, so "today" is your today |
 
-Then add **one** of the two below: wherever your data is kept now. Settings in
-the app tells you which.
+Then add the settings for wherever your data is kept now (Settings in the app
+tells you which): **both** settings for a Google account, **or** the one
+setting for GitHub. Names must match exactly, capitals and underscores
+included.
 
-**Signed in with Google (your Unify account):**
+**Signed in with Google (your Unify account)** — add both:
 
 | Name | Type | Value |
 |---|---|---|
 | `FIREBASE_SERVICE_ACCOUNT` | Secret | Firebase console → project `unify-sessions` → ⚙ **Project settings → Service accounts → Generate new private key**. Paste the whole downloaded JSON file, then delete the download |
 | `FIREBASE_UID` | Text | Firebase console → **Authentication → Users**: the *User UID* of your Google account |
 
-**A private GitHub repository:**
+**A private GitHub repository** — instead of the two above:
 
 | Name | Type | Value |
 |---|---|---|
