@@ -1,6 +1,12 @@
 # Unify — the data file
 
-One JSON file, `data/unify.json`, in the private Unify-data repository.
+One JSON file, kept in one of three places (each device chooses):
+
+- signed in with Google: as text in the Firebase Realtime Database at
+  `/users/<uid>/file` (only that person can read or write it)
+- a private GitHub repository: `data/unify.json` (Aaron's is in Unify-data)
+- this device only: `localStorage` (`unify.data`), nowhere else
+
 Written by the app as `JSON.stringify(data, null, 2) + '\n'`.
 
 ```json
@@ -123,6 +129,9 @@ deletion on one device isn't undone by the other's older copy.
 ## Per-device, not in the file
 
 `localStorage`: `unify.github` (the token and repository), `unify.data` (this
-device's copy), `unify.sync` (the sha last read, whether there are changes
-to upload), `unify.prefs` (load the model on start, ask for reflections,
-recent Probe questions). IndexedDB `unify-vectors`: the model's fingerprints.
+device's copy), `unify.sync` (the version last read — GitHub's sha or the
+database's ETag — and whether there are changes to upload), `unify.prefs`
+(signed in with Google or this device only, load the model on start, ask
+for reflections, recent Probe questions, your name for shared sessions,
+when a copy was last downloaded). Firebase keeps who is signed in in
+IndexedDB (`firebaseLocalStorageDb`). IndexedDB `unify-vectors`: the model's fingerprints.

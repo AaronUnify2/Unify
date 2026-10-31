@@ -8,13 +8,13 @@
    kept by the app itself, in this browser's storage.
    =========================================================================== */
 
-var CACHE = 'unify-shell-v2';
+var CACHE = 'unify-shell-v3';
 var VENDOR = 'unify-vendor-v1';
 var TIMEOUT = 4000;
 
 var SHELL = [
   './', 'index.html', 'session.html', 'css/app.css', 'manifest.webmanifest', 'icons/icon.svg',
-  'js/util.js', 'js/model.js', 'js/merge.js', 'js/github.js', 'js/store.js', 'js/sync.js',
+  'js/util.js', 'js/model.js', 'js/merge.js', 'js/github.js', 'js/account.js', 'js/store.js', 'js/sync.js',
   'js/share.js', 'js/live.js',
   'js/semantic.js', 'js/semantic-worker.js', 'js/probe.js', 'js/handlers.js', 'js/ui.js',
   'js/views-problems.js', 'js/views-goals.js', 'js/views-tasks.js', 'js/views-session.js', 'js/views-journal.js',

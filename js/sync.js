@@ -1,18 +1,23 @@
 /* ===========================================================================
-   sync.js — keeping this device and GitHub in step.
+   sync.js — keeping this device and where your data is kept in step.
+
+   Your data is kept in one of two places: your Unify account (account.js,
+   signed in with Google) or a private GitHub repository (github.js). Both
+   hold the same file and work the same way, so everything below applies to
+   either. On this device only, there is nothing to sync.
 
    This device's copy is saved on every change (store.js), so Unify opens
    and works without a connection. Sync then:
 
      - on opening, on coming back to the page, and when back online: reads
-       the file on GitHub, merges it with this copy (merge.js), and uploads
-       the result if it has anything GitHub's doesn't
+       the file, merges it with this copy (merge.js), and uploads the
+       result if it has anything the kept copy doesn't
      - after a change: uploads a moment later, once typing has paused
      - when the page is hidden or closed: uploads straight away
 
-   An upload names the version it replaces (its sha). If the file changed on
-   GitHub in the meantime — the other device saved — GitHub refuses it, and
-   Sync reads, merges and tries again.
+   An upload names the version it replaces (GitHub's sha, or the database's
+   ETag). If the file changed in the meantime — the other device saved — the
+   upload is refused, and Sync reads, merges and tries again.
 
    State, shown in the header: off · loading · pending · saving · saved ·
    offline · error.
@@ -48,8 +53,27 @@
     listeners.push(fn);
   }
 
+  /**
+   * Where the data is kept: { name, getFile, putFile } for GitHub or the
+   * account, or null on this device only (or while not signed in).
+   */
+  function backend() {
+    var cfg = GitHub.config();
+    if (cfg) {
+      return {
+        name: 'GitHub',
+        getFile: function () { return GitHub.getFile(cfg); },
+        putFile: function (text, sha, keepalive) { return GitHub.putFile(cfg, text, sha, keepalive); }
+      };
+    }
+    if (Prefs.get('account') && Account.user) {
+      return { name: 'your account', getFile: Account.getFile, putFile: Account.putFile };
+    }
+    return null;
+  }
+
   function enabled() {
-    return !!GitHub.config();
+    return !!backend();
   }
 
   function fileText() {
@@ -95,19 +119,19 @@
     }, delay);
   }
 
-  /** Read GitHub's copy, merge it with this one, and upload if needed. */
+  /** Read the kept copy, merge it with this one, and upload if needed. */
   function pull() {
     if (!enabled()) return Promise.resolve();
     if (busy) { schedule(1000); return Promise.resolve(); }
     busy = true;
     lastPull = Date.now();
     setState('loading');
-    var cfg = GitHub.config();
-    return GitHub.getFile(cfg).then(function (remote) {
+    var where = backend();
+    return where.getFile().then(function (remote) {
       busy = false;
       if (!remote.exists) {
-        // The first sync to this repository: create the file from this copy
-        meta.sha = null;
+        // The first sync to this place: create the file from this copy
+        meta.sha = remote.sha || null;
         meta.dirty = true;
         saveMeta();
         return push();
@@ -116,7 +140,7 @@
       try {
         remoteData = Model.normalise(JSON.parse(remote.text));
       } catch (e) {
-        var err = new Error('The data file on GitHub (' + cfg.path + ') isn’t valid JSON, so it wasn’t loaded or overwritten. Fix it on GitHub, then sync again.');
+        var err = new Error('The data file in ' + where.name + ' isn’t valid JSON, so it wasn’t loaded or overwritten.');
         err.fatal = true;
         throw err;
       }
@@ -146,7 +170,7 @@
     busy = true;
     setState('saving');
     var revAtStart = Store.rev;
-    return GitHub.putFile(GitHub.config(), fileText(), meta.sha, keepalive).then(function (sha) {
+    return backend().putFile(fileText(), meta.sha, keepalive).then(function (sha) {
       busy = false;
       conflicts = 0;
       meta.sha = sha;
@@ -165,7 +189,7 @@
         // The other device saved first: read its copy, merge, upload again
         conflicts++;
         if (conflicts > 3) {
-          setState('error', 'GitHub kept refusing the upload because the file keeps changing. Try Sync now in Settings.');
+          setState('error', 'The upload kept being refused because the file keeps changing. Try Sync now in Settings.');
           return;
         }
         return pull();
@@ -182,7 +206,9 @@
 
   function start() {
     if (!enabled()) {
-      setState('off');
+      // Signed in with Google before, but not (yet) on this visit
+      if (Prefs.get('account')) setState(Account.known ? 'signedout' : 'loading');
+      else setState('off');
       return;
     }
     pull();
@@ -215,6 +241,7 @@
 
   global.Sync = {
     on: on,
+    backend: backend,
     start: start,
     changed: changed,
     now: now,

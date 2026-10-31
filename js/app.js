@@ -184,7 +184,8 @@
     saving: 'Saving…',
     saved: 'Synced',
     offline: 'Offline',
-    error: 'Sync problem'
+    error: 'Sync problem',
+    signedout: 'Signed out'
   };
 
   function drawSync() {
@@ -386,7 +387,9 @@
 
   /** Show the app (once there's a token, or this device only was chosen). */
   function enter() {
-    document.getElementById('gate').hidden = true;
+    var gate = document.getElementById('gate');
+    gate.hidden = true;
+    gate.innerHTML = '';
     document.getElementById('app').hidden = false;
     entered = true;
     if (!liveStarted) {
@@ -408,6 +411,40 @@
     var gate = document.getElementById('gate');
     gate.innerHTML = Views.settings.gate();
     gate.hidden = false;
+    // Ready before the button is pressed, so Google's window can open at once
+    if (Account.configured()) Account.load().catch(function () { /* signing in will say */ });
+  }
+
+  /**
+   * After signing in with Google: this device keeps its data in the account
+   * from now on. What's here (from GitHub, or this device only) is merged
+   * into what the account already has, and uploaded.
+   */
+  function finishSignIn(fromGitHub) {
+    Prefs.set('pendingSignIn', false);
+    var ready = fromGitHub ? Sync.now() : Promise.resolve();
+    return ready.then(function () {
+      if (fromGitHub && Sync.state !== 'saved') {
+        UI.toast('Couldn’t get your latest data from GitHub first, so nothing has moved yet. Try again in a moment.', 'error');
+        return;
+      }
+      GitHub.clear();
+      Prefs.set('account', true);
+      Prefs.set('localOnly', false);
+      Sync.reset();
+      if (entered) render();
+      else enter();
+      Sync.start();
+      var u = Account.user;
+      UI.toast('Signed in' + (u && u.email ? ' as ' + u.email : ''));
+    });
+  }
+
+  /** On this device only: ask the browser not to clear Unify's storage. */
+  function keepStorage() {
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().catch(function () { /* the advice in Settings still applies */ });
+    }
   }
 
   function boot() {
@@ -433,12 +470,31 @@
     });
     Sync.on(drawSync);
 
+    // Signed in with Google (or coming back from Google's sign-in page)
+    Account.on(function () {
+      if (Prefs.get('account')) {
+        Sync.start();
+        if (entered) requestRender();
+      }
+    });
+
     if (GitHub.config()) {
       enter();
       Sync.start();
+    } else if (Prefs.get('account')) {
+      enter();
+      Sync.start();
+      Account.load().catch(function () { /* stays on this device until it loads */ });
+    } else if (Prefs.get('pendingSignIn') && Account.configured()) {
+      Account.load().then(function (user) {
+        if (user) return finishSignIn(false);
+        Prefs.set('pendingSignIn', false);
+        if (Prefs.get('localOnly')) enter(); else showGate();
+      }, function () { showGate(); });
     } else if (Prefs.get('localOnly')) {
       enter();
       Sync.start();
+      keepStorage();
     } else {
       showGate();
     }
@@ -454,7 +510,9 @@
     render: render,
     requestRender: requestRender,
     isWide: isWide,
-    enter: enter
+    enter: enter,
+    finishSignIn: finishSignIn,
+    keepStorage: keepStorage
   };
 
   document.addEventListener('DOMContentLoaded', boot);

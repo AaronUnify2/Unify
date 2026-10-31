@@ -213,7 +213,11 @@
   // ---- per-device preferences ------------------------------------------------
 
   var PREF_DEFAULTS = {
-    localOnly: false,        // using Unify on this device only, without GitHub
+    localOnly: false,        // using Unify on this device only
+    account: false,          // signed in with Google: data kept in the Unify account
+    pendingSignIn: false,    // gone to Google's page to sign in, and coming back
+    lastExport: null,        // when a copy was last downloaded on this device
+    shareName: '',           // your name, as helpers on a shared session see it
     loadModel: true,         // start the language model when Unify opens
     askReflection: true,     // ask for a reflection when a task is ticked off
     probes: []               // recent Probe questions on this device

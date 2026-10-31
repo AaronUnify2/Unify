@@ -10,16 +10,17 @@ person, phone first, and usable from a computer too.
 Live at **https://aaronunify2.github.io/Unify/** — Pages serves the `main`
 branch as it stands.
 
-## Two repositories
+## Where data is kept
 
-| | | |
-|---|---|---|
-| **Unify** (this one) | public | The app. No personal data, ever |
-| **Unify-data** | private | `data/unify.json` — everything you write |
+Each device chooses, on its first screen:
 
-The app reads and writes the data file through the GitHub API with a token
-kept in each browser. Without one, it shows a sign-in screen (or runs on one
-device only, if you choose that).
+| | |
+|---|---|
+| **Signed in with Google** | Kept in the person's Unify account: one file at `/users/<uid>/file` in the Firebase Realtime Database, readable and writable only by them (`firebase-rules.json`). Every device they sign in on stays in step |
+| **This device only** | Kept in this browser's storage and nowhere else |
+| **A private GitHub repository** | Kept as `data/unify.json` in a repository of their own, with a token (the original way; Aaron's data lives in the private **Unify-data** repository) |
+
+This repository is the app and is public: no personal data, ever.
 
 ## The model
 
@@ -64,7 +65,8 @@ Harada mode (the 8×8 grid in Unify 300/400) is left out: it never got used.
     util.js           escaping, ids, dates
     model.js          what the data is made of; normalising a file
     merge.js          combining two copies, field by field
-    github.js         reading and writing the data file
+    github.js         reading and writing the data file on GitHub
+    account.js        signing in with Google; the data file in the account
     store.js          the data in memory, this device's copy, changes; Prefs
     sync.js           keeping this device and GitHub in step
     share.js          the sharing database (Firebase), by plain REST
@@ -84,23 +86,42 @@ Harada mode (the 8×8 grid in Unify 300/400) is left out: it never got used.
 
 ## Signing in
 
-On each device, once:
+**With Google.** Firebase Authentication, with the library self-hosted in
+`vendor/firebase-12.19.0` (`js/account.js`). It needs, once, in the
+Firebase console (project `unify-sessions`):
+
+1. *Build → Authentication → Get started → Sign-in method → Google →
+   Enable*, with a support email.
+2. *Authentication → Settings → Authorized domains*: add
+   `aaronunify2.github.io`.
+3. *Project settings → General → Your apps → Web (`</>`)*: register an app
+   (no Hosting), and copy `apiKey` and `appId` from its config into
+   `CONFIG` at the top of `js/account.js`. None of it is secret.
+4. The *Rules* in Realtime Database: `firebase-rules.json` (it has a
+   `users` part now as well as `sessions`).
+
+Until `apiKey` is set, the first screen offers only *this device only* and
+GitHub. Settings has *Move to a Google account* (from GitHub or this
+device only: the data is merged into the account), *Sign out of this
+device*, and *Delete my account and data*.
+
+**With GitHub**, on each device, once:
 
 1. GitHub → **Settings → Developer settings → Personal access tokens →
    Fine-grained tokens → Generate new token**.
 2. Repository access: **Only select repositories → Unify-data**.
 3. Permissions: **Contents → Read and write**. Nothing else.
-4. Paste it into Unify's sign-in screen.
+4. Paste it under *Use a private GitHub repository instead*.
 
 The token stays in that browser's `localStorage` (`unify.github`) and is only
 ever sent to `api.github.com`. Unify refuses to use a repository that is
-public. **Sign out** (Settings) removes the token and the device's copy.
+public.
 
 ## Sync
 
 Every change is saved on the device at once, so Unify opens and works
-offline. When there's a connection it reads the file on GitHub, merges, and
-uploads — on opening, on coming back to the tab, when back online, and a
+offline. When there's a connection it reads the kept file (account or GitHub),
+merges, and uploads — on opening, on coming back to the tab, when back online, and a
 moment after each change. Two copies are merged field by field (each record
 keeps `fieldsAt`), deletions are remembered, so phone and computer never ask
 "which version?" and never overwrite each other's edits to different fields.
@@ -153,6 +174,15 @@ reflection → finish chain, journal → problem, editing while typing, two
 devices editing offline and merging, simultaneous saves (409 then merge),
 reopening offline, Probe with the model loaded, no sideways scrolling at
 390px, and sign-out leaving nothing behind.
+
+Accounts were tested against the Firebase Auth and Realtime Database
+emulators (`firebase emulators:start --only database,auth`), with
+`CONFIG.apiKey` set to anything and `EMULATOR` in `account.js` pointed at
+them: the rules (only the owner reads or writes their file; nobody lists
+users), saves refused on a stale ETag, and in browsers — signing in on a
+phone and a computer and merging both, staying signed in, this device only
+then signing in, moving from GitHub (with another device's newer change on
+GitHub), deleting the account, and signing out.
 
 Sessions were tested against the Firebase Realtime Database emulator
 (`firebase emulators:start --only database`, rules loaded from

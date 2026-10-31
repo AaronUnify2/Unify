@@ -7,25 +7,65 @@
         ".read": "$code.matches(/^[a-z0-9]{20,40}$/)",
         ".write": "$code.matches(/^[a-z0-9]{20,40}$/)",
         ".validate": "newData.hasChildren(['title', 'createdAt'])",
-        "title": { ".validate": "newData.isString() && newData.val().length <= 120" },
-        "date": { ".validate": "newData.isString() && newData.val().length <= 10" },
-        "owner": { ".validate": "newData.isString() && newData.val().length <= 40" },
-        "createdAt": { ".validate": "newData.isString() && newData.val().length <= 40" },
+        "title": {
+          ".validate": "newData.isString() && newData.val().length <= 120"
+        },
+        "date": {
+          ".validate": "newData.isString() && newData.val().length <= 10"
+        },
+        "owner": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "createdAt": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
         "items": {
           "$key": {
             ".validate": "$key.matches(/^[a-z]_[a-z0-9]{6,30}$/) && newData.hasChildren(['text', 'order'])",
-            "text": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 300" },
-            "notes": { ".validate": "newData.isString() && newData.val().length <= 2000" },
-            "goal": { ".validate": "newData.isString() && newData.val().length <= 200" },
-            "order": { ".validate": "newData.isNumber()" },
-            "done": { ".validate": "newData.isBoolean()" },
-            "doneBy": { ".validate": "newData.isString() && newData.val().length <= 40" },
-            "at": { ".validate": "newData.isString() && newData.val().length <= 40" },
-            "addedBy": { ".validate": "newData.isString() && newData.val().length <= 40" },
-            "$other": { ".validate": false }
+            "text": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 300"
+            },
+            "notes": {
+              ".validate": "newData.isString() && newData.val().length <= 2000"
+            },
+            "goal": {
+              ".validate": "newData.isString() && newData.val().length <= 200"
+            },
+            "order": {
+              ".validate": "newData.isNumber()"
+            },
+            "done": {
+              ".validate": "newData.isBoolean()"
+            },
+            "doneBy": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            },
+            "at": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            },
+            "addedBy": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            },
+            "$other": {
+              ".validate": false
+            }
           }
         },
-        "$other": { ".validate": false }
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        "file": {
+          ".validate": "newData.isString() && newData.val().length <= 5000000"
+        },
+        "$other": {
+          ".validate": false
+        }
       }
     }
   }
