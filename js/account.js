@@ -22,10 +22,10 @@
   // web app's config. None of it is secret; the database's rules are what
   // protect each person's data. Empty apiKey means accounts aren't set up.
   var CONFIG = {
-    apiKey: '',
+    apiKey: 'AIzaSyAMv8yD8yYeoHN2USc-w8WQ1vhEt1Z_0no',
     authDomain: 'unify-sessions.firebaseapp.com',
     projectId: 'unify-sessions',
-    appId: '',
+    appId: '1:475397974408:web:a0bf90904025638fe5323d',
     databaseURL: 'https://unify-sessions-default-rtdb.asia-southeast1.firebasedatabase.app'
   };
 
