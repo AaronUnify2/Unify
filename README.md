@@ -49,6 +49,10 @@ Plus:
   goal, goals with no next step, goals gone quiet), what keeps coming back,
   and open problems that seem to be the same thing.
 - **Insights** — a few figures and small charts.
+- **Claude connector** — talk to Claude, typing or in voice mode, and what
+  comes out of it (problems, goals, steps, tasks, sessions, journal entries)
+  goes straight into Unify. A small server in `connector/`, set up once:
+  see `connector/README.md`.
 
 Harada mode (the 8×8 grid in Unify 300/400) is left out: it never got used.
 
@@ -79,6 +83,7 @@ Harada mode (the 8×8 grid in Unify 300/400) is left out: it never got used.
     ui.js             sheets, toasts, tags, pickers
     views-*.js        one per section
     app.js            routes, drawing, listeners, start-up
+  connector/          Unify as a Claude connector (an MCP server for a Cloudflare Worker) — see connector/README.md
   vendor/             Transformers.js and all-MiniLM-L6-v2, self-hosted — see vendor/README.md
 ```
 
